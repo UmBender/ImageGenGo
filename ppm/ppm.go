@@ -2,6 +2,7 @@ package ppm
 
 import (
 	"fmt"
+	"math"
 	"os"
 )
 
@@ -15,7 +16,9 @@ type ppm struct {
 func Test() {
 	my_ppm, _ := Create_ppm("teste_ppm",1080,1920)
 	my_ppm.FillBackGround(0xFF202020)
-	my_ppm.DrawRect(100,200,500,600, 0xFFEFEFEF)
+	//my_ppm.DrawRect(100,200,500,600, 0xFFEFEFEF)
+
+	my_ppm.DrawSoftRect(0,0,1080,1920, 0xFF20FFFF,0xFF202020)
 	my_ppm.DrawSphere(540,960, 200, 0xFFFF00FF)
 	my_ppm.DrawSoftSphere(200, 600,250,0xFF00FFFF, 0xFF202020)
 	my_ppm.WritePPM()
@@ -129,7 +132,22 @@ func (p *ppm) DrawSoftSphere(raio uint32, dx uint32, dy uint32, color uint32, ba
 
 
 func (p *ppm) DrawSoftRect(i0 int, j0 int, ie int, je int, color uint32,backgroundColor uint32 )  {
+	red_init, green_init, blue_init := Decomp(backgroundColor)
+	grad_cof_red, grad_cof_green, grad_cof_blue := gradCof(backgroundColor, color, 
+	uint32(math.Sqrt((float64(i0)-float64(ie))* (float64(j0)-float64(je)))))
+	fmt.Println(red_init,green_init,blue_init)
+	fmt.Println(grad_cof_blue,grad_cof_red,grad_cof_green)
 
+	for i := 0; i < ie - i0; i ++ {
+		for j := 0; j < je - j0; j++ {
+			grad_pos_red := (uint32(grad_cof_red * float64(i * j)) + (uint32(red_init)))
+			grad_pos_green := (uint32(grad_cof_green * float64(i * j)) + (uint32(green_init))) << 8
+			grad_pos_blue := (uint32(grad_cof_blue * float64(i * j)) + (uint32(blue_init))) << 16
+			var grad_pos uint32 = 0xFF000000 | grad_pos_red | grad_pos_green | grad_pos_blue
+
+			p.pontos[(i + i0) * int(p.length) + int(j0) + j] = grad_pos
+		}
+	}
 }
 
 func gradCof(color_init uint32, color_end uint32, number_levels uint32)  (float64, float64, float64){
