@@ -11,29 +11,19 @@ type ppm struct {
 	length 	uint32
 	pontos 	[]uint32
 }
-const height = 1080
-const length = 1920
-const background = 0x00FF2020
-const red = 0xFF2020FF
-const green = 0xFF20FF20
-const blue = 0xFFFF2020
-const purple = 0xFFFF20FF
-
-
-var pontos [height * length]uint32
 
 func Test() {
-	my_ppm, _ := Create_ppm("new_ppm",1080,1920)
+	my_ppm, _ := Create_ppm("teste_ppm",1080,1920)
 	my_ppm.FillBackGround(0xFF202020)
 	my_ppm.DrawRect(100,200,500,600, 0xFFEFEFEF)
-	my_ppm.DrawSphere(540,960, 100, 0xFFFF00FF)
+	my_ppm.DrawSphere(540,960, 200, 0xFFFF00FF)
+	my_ppm.DrawSoftSphere(200, 600,250,0xFF00FFFF, 0xFF202020)
 	my_ppm.WritePPM()
 }
 
 func (a *ppm) WritePPM() {
 	archive, err := os.OpenFile(a.name + ".ppm", os.O_RDWR | os.O_CREATE, 0666)
-
-	if err != nil {
+if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when tring to open image %s", err)
 		archive.Close()
 		return
@@ -98,7 +88,7 @@ func (p *ppm) DrawSphere(i0 int, j0 int, r int, color uint32) {
 func (p *ppm) DrawRect(i0 int, j0 int, ie int, je int, color uint32)  {
 	for i := i0; i < ie; i++{
 		for j := j0; j < je; j++ {
-			p.pontos[i*length + j] = color
+			p.pontos[i* int(p.length) + j] = color
 		}
 	}
 }
@@ -112,63 +102,48 @@ func Decomp(color uint32) (uint8, uint8, uint8) {
 	return red, green, blue
 }
 
-func PintaFundo() {
-	for i:= 0; i < height; i++{
-		for j := 0; j < length; j++ {
-			pontos[i * length + j] =  background
-		}
-	}
-}
-
-func PintaBolinha() {
-	raio := 300
-	dx := 540 - raio
-	dy := 960 - raio
-	red_purple, green_purple, blue_purple:= Decomp(purple)
-
-	red_init, green_init, blue_init := Decomp(background)
-
-	var grad_cof_red float64 = float64(red_purple - red_init) / float64(raio * raio)
-	var grad_cof_green float64 = float64(green_purple - green_init) / float64(raio * raio)
-	var grad_cof_blue float64 = float64(blue_purple - blue_init) / float64(raio * raio)
-	for i := 0 ; i < 2*raio; i++ {
-		for j:= 0; j < 2 * raio; j++ {
-			powx := (raio - i) * (raio - i)
-			powy := (raio - j) * (raio - j)
-			if powx + powy <= raio * raio {
-				grad_pos_red := float64(raio * raio) -float64(powx)  -float64(powy) 
-				grad_pos_green := float64(raio * raio) -float64(powx)  -float64(powy) 
-				grad_pos_blue := float64(raio * raio) -float64(powx)  -float64(powy) 
-				grad_pos := ((uint32(grad_pos_red * grad_cof_red)+ uint32(red_init)) << 0)|
-				((uint32(grad_pos_green * grad_cof_green)+ uint32(green_init) ) << 8)|
-				((uint32(grad_pos_blue * grad_cof_blue)+  uint32(blue_init) ) << 16)
-				pontos[(i + dx) * length + dy + j ] = grad_pos
-			}
-
-		}
-
-	}
-}
-func EscreveArquivo(nome string) {
-	arquivo, err := os.OpenFile(nome + ".ppm", os.O_RDWR | os.O_CREATE, 0666)
-	if err != nil {
-		fmt.Println("Erro ao abrir:", err)
-	}
+func (p *ppm) DrawSoftSphere(raio uint32, dx uint32, dy uint32, color uint32, backgroundColor uint32) {
 
 	
-	_, err1 := fmt.Fprintf(arquivo,"P6\n%d %d\n255\n",length, height)
-	if err1 != nil {
-		return
-	}
-	for i:= 0; i < height * length; i++ {
-		pixel := pontos[i]
-		pixel &= 0x00FFFFFF
-		pixeis := []byte{0,0,0}
-		for j:= 0; j < 3; j++ {
-			pixeis[j] = byte(pixel)
-			pixel /= 256
+	red_init, green_init, blue_init := Decomp(backgroundColor)
+	grad_cof_red, grad_cof_green, grad_cof_blue :=gradCof(backgroundColor, color, raio)
+
+
+	for i := 0; i < 2 * int(raio); i++ {
+		for j := 0; j < 2 * int(raio); j++ {
+			powx := (raio - uint32(i)) * (raio - uint32(i))
+			powy := (raio - uint32(j)) * (raio - uint32(j))
+			if powx + powy < raio * raio {
+				grad_pos_red := (uint32(grad_cof_red * float64(raio* raio - powx - powy)) + uint32(red_init) )
+				grad_pos_green := (uint32(grad_cof_green * float64(raio* raio - powx - powy))+ uint32(green_init) )<< 8 
+				grad_pos_blue := (uint32(grad_cof_blue * float64(raio* raio - powx - powy))+uint32(blue_init) )<< 16 
+				
+				
+				var grad_pos uint32 = 0xFF000000 | grad_pos_red | grad_pos_green | grad_pos_blue
+				
+				p.pontos[(i + int(dx)) * int(p.length) +int( dy) + j ] = grad_pos
+			}
 		}
-		arquivo.Write(pixeis)
 	}
-	arquivo.Close()
 }
+
+
+func (p *ppm) DrawSoftRect(i0 int, j0 int, ie int, je int, color uint32,backgroundColor uint32 )  {
+
+}
+
+func gradCof(color_init uint32, color_end uint32, number_levels uint32)  (float64, float64, float64){
+
+
+	red, green, blue := Decomp(color_end)
+	red_init, green_init, blue_init := Decomp(color_init)
+
+	var grad_cof_red float64 = float64(red - red_init) / float64( number_levels * number_levels )
+	var grad_cof_green float64 = float64(green - green_init) / float64( number_levels * number_levels )
+	var grad_cof_blue float64 = float64(blue - blue_init) / float64( number_levels * number_levels )
+
+
+
+	return grad_cof_red, grad_cof_green, grad_cof_blue
+}
+
