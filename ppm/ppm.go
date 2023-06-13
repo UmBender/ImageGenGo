@@ -21,6 +21,7 @@ func Test() {
 	my_ppm.DrawSoftRect(0,0,1080,1920, 0xFF20FFFF,0xFF202020)
 	my_ppm.DrawSphere(540,960, 200, 0xFFFF00FF)
 	my_ppm.DrawSoftSphere(200, 600,250,0xFF00FFFF, 0xFF202020)
+	my_ppm.DrawLine(0,0,1080,1920, 0xFFFFFFFF)
 	my_ppm.WritePPM()
 }
 
@@ -147,6 +148,14 @@ func (p *ppm) DrawSoftRect(i0 int, j0 int, ie int, je int, color uint32,backgrou
 
 			p.pontos[(i + i0) * int(p.length) + int(j0) + j] = grad_pos
 		}
+	}
+}
+
+func (p *ppm) DrawLine(i0 int, j0 int, ie int, je int, color uint32)  {
+	a := float64(ie-i0)/ float64(je - j0)
+	c := float64(i0) - float64(j0) * a
+	for j := j0; j < je ; j++ {
+		p.pontos[int(float64(j) * a + c)*int(p.length) + j] = color
 	}
 }
 
