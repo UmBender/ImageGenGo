@@ -2,7 +2,7 @@ package ppm
 
 import (
 	"fmt"
-	"math"
+	"math" 
 	"os"
 )
 
@@ -14,20 +14,24 @@ type ppm struct {
 }
 
 func Test() {
+
 	my_ppm, _ := Create_ppm("teste_ppm",1080,1920)
-	my_ppm.FillBackGround(0xFF202020)
+	//my_ppm.FillBackGround(0xFF202020)
 	//my_ppm.DrawRect(100,200,500,600, 0xFFEFEFEF)
 
-	my_ppm.DrawSoftRect(0,0,1080,1920, 0xFF20FFFF,0xFF202020)
-	my_ppm.DrawSphere(540,960, 200, 0xFFFF00FF)
-	my_ppm.DrawSoftSphere(200, 600,250,0xFF00FFFF, 0xFF202020)
-	my_ppm.DrawLine(0,0,1080,1920, 0xFFFFFFFF)
+	my_ppm.DrawSoftRect(0,0,1080,1920, 0xFFFF20AA,0xFF202020)
+	//my_ppm.DrawSphere(540,960, 200, 0xFFFF00FF)
+	//my_ppm.DrawSoftSphere(200, 600,250,0xFFFFFF20, 0xFF202020)
+	//my_ppm.DrawSine(0xFFFFFFFF)
+	 
+
+	//my_ppm.DrawLine(10,35,1000,100, 0xFFFFFFFF)
 	my_ppm.WritePPM()
 }
 
 func (a *ppm) WritePPM() {
 	archive, err := os.OpenFile(a.name + ".ppm", os.O_RDWR | os.O_CREATE, 0666)
-if err != nil {
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when tring to open image %s", err)
 		archive.Close()
 		return
@@ -136,8 +140,6 @@ func (p *ppm) DrawSoftRect(i0 int, j0 int, ie int, je int, color uint32,backgrou
 	red_init, green_init, blue_init := Decomp(backgroundColor)
 	grad_cof_red, grad_cof_green, grad_cof_blue := gradCof(backgroundColor, color, 
 	uint32(math.Sqrt((float64(i0)-float64(ie))* (float64(j0)-float64(je)))))
-	fmt.Println(red_init,green_init,blue_init)
-	fmt.Println(grad_cof_blue,grad_cof_red,grad_cof_green)
 
 	for i := 0; i < ie - i0; i ++ {
 		for j := 0; j < je - j0; j++ {
@@ -152,10 +154,19 @@ func (p *ppm) DrawSoftRect(i0 int, j0 int, ie int, je int, color uint32,backgrou
 }
 
 func (p *ppm) DrawLine(i0 int, j0 int, ie int, je int, color uint32)  {
-	a := float64(ie-i0)/ float64(je - j0)
-	c := float64(i0) - float64(j0) * a
-	for j := j0; j < je ; j++ {
-		p.pontos[int(float64(j) * a + c)*int(p.length) + j] = color
+	a:= (float64(ie) -float64( i0)) / (float64(je) -float64(j0))
+	c := float64(ie) - float64(je)* a
+
+	for j := j0; j < je; j++ {
+		new_i := int(a * float64(j) + c)
+		next_i := int(a * float64(j + 1) +c)
+
+		if j + 1 < je {
+			if int(math.Abs(float64(next_i - new_i))) > 1.0 {
+				for k := 1; k + new_i < next_i ; k++ {
+					p.pontos[(k + new_i) * int(p.length) + j] = color } }
+		}
+		p.pontos[new_i * int(p.length) + j] = color
 	}
 }
 
@@ -169,8 +180,17 @@ func gradCof(color_init uint32, color_end uint32, number_levels uint32)  (float6
 	var grad_cof_green float64 = float64(green - green_init) / float64( number_levels * number_levels )
 	var grad_cof_blue float64 = float64(blue - blue_init) / float64( number_levels * number_levels )
 
-
-
 	return grad_cof_red, grad_cof_green, grad_cof_blue
+}
+
+func (p* ppm) DrawSine(color uint32)  {
+	amplit := float64(p.height)/2.0
+	omeg := 2.0 * math.Pi / float64(p.length)
+	for j := 0; j < int(p.length) - 10; j++ {
+		i := int(math.Sin(float64(j) * omeg)* amplit + amplit) 
+		fmt.Println(i)
+		
+		p.pontos[i * int(p.length) + j] = color
+	}
 }
 
