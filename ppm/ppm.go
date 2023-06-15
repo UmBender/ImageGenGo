@@ -19,10 +19,21 @@ func Test() {
 	//my_ppm.FillBackGround(0xFF202020)
 	//my_ppm.DrawRect(100,200,500,600, 0xFFEFEFEF)
 
-	my_ppm.DrawSoftRect(0,0,1080,1920, 0xFFFF20AA,0xFF202020)
+	my_ppm.DrawSoftRect(0,0,1080,1920, 0xFFFF20AA,0xFF202020) //Pretty purple
+	//my_ppm.DrawSoftRect(0,0,1080,1920, 0xFFFFAA20,0xFF202020) //Pretty Cyan
+
+	//my_ppm.DrawSoftRect(0,0,1080,1920, 0xFF60FF20,0xFF202020) // Pretty Gree
 	//my_ppm.DrawSphere(540,960, 200, 0xFFFF00FF)
-	//my_ppm.DrawSoftSphere(200, 600,250,0xFFFFFF20, 0xFF202020)
-	//my_ppm.DrawSine(0xFFFFFFFF)
+
+	my_ppm.DrawSoftSphere(400, 200,400,0xFFFF20AA, 0xFF202020)
+	my_ppm.DrawSoftSphere(120, 100,732,0xFFFF20AA, 0xFF202020)
+	my_ppm.DrawSoftSphere(200, 600,250,0xFFFF20AA, 0xFF202020)
+	my_ppm.DrawSoftSphere(80, 900,1700,0xFFFF20AA, 0xFF202020)
+	my_ppm.DrawSoftSphere(120, 600,1000,0xFFFF20AA, 0xFF202020)
+	//my_ppm.DrawSoftSphere(200, 600,250,0xFFFF20AA, 0xFF202020)
+	my_ppm.DrawSine(0xFFFFFFFF, 0, 1080, 100)
+	my_ppm.DrawSine(0xFFFFFFFF, 0, 300,100)
+	
 	 
 
 	//my_ppm.DrawLine(10,35,1000,100, 0xFFFFFFFF)
@@ -183,14 +194,20 @@ func gradCof(color_init uint32, color_end uint32, number_levels uint32)  (float6
 	return grad_cof_red, grad_cof_green, grad_cof_blue
 }
 
-func (p* ppm) DrawSine(color uint32)  {
-	amplit := float64(p.height)/2.0
+func (p* ppm) DrawSine(color uint32, desloc_horz int, amplitude int,desloc_vert int)  {
+	amplit :=  float64(amplitude)/2.0
 	omeg := 2.0 * math.Pi / float64(p.length)
-	for j := 0; j < int(p.length) - 10; j++ {
-		i := int(math.Sin(float64(j) * omeg)* amplit + amplit) 
-		fmt.Println(i)
+	
+	radi_desloc_horz := omeg * float64(desloc_horz)
+
+	
+	for j := 0; j < int(p.length) ; j++ {
+		i := int((math.Sin(float64(j) * omeg + radi_desloc_horz)) * (amplit - 1)) +int(p.height)/2 -desloc_vert 
 		
-		p.pontos[i * int(p.length) + j] = color
+		if i > 0 && i < int(p.height) {
+
+			p.pontos[i * int(p.length) + j] = color
+		}
 	}
 }
 
