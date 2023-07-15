@@ -25,15 +25,17 @@ func Test() {
 	//my_ppm.DrawSoftRect(0,0,1080,1920, 0xFF60FF20,0xFF202020) // Pretty Gree
 	//my_ppm.DrawSphere(540,960, 200, 0xFFFF00FF)
 
-	my_ppm.DrawSoftSphere(400, 200,400,0xFFFF20AA, 0xFF202020)
-	my_ppm.DrawSoftSphere(120, 100,732,0xFFFF20AA, 0xFF202020)
-	my_ppm.DrawSoftSphere(200, 600,250,0xFFFF20AA, 0xFF202020)
-	my_ppm.DrawSoftSphere(80, 900,1700,0xFFFF20AA, 0xFF202020)
-	my_ppm.DrawSoftSphere(120, 600,1000,0xFFFF20AA, 0xFF202020)
-	//my_ppm.DrawSoftSphere(200, 600,250,0xFFFF20AA, 0xFF202020)
-	my_ppm.DrawSine(0xFFFFFFFF, 0, 1080, 100)
-	my_ppm.DrawSine(0xFFFFFFFF, 0, 300,100)
+	my_ppm.DrawSoftSphere(400, 200,400,0xFFd97aff, 0xFFd920AA)
+	my_ppm.DrawSoftSphere(120, 100,732,0xFFd97aff, 0xFFd920AA)
+	my_ppm.DrawSoftSphere(200, 600,250,0xFFd97aff, 0xFFd920AA)
+	my_ppm.DrawSoftSphere(80, 900,1700,0xFFd97aff, 0xFFd920AA)
+	my_ppm.DrawSoftSphere(120, 600,1000,0xFFd97aff, 0xFFd920AA)
+	//my_ppm.DrawSphere(400, 600,400,0xFFd97aff)
+	my_ppm.DrawSoftSphere(200, 600,250,0xFFd97aff, 0xFFd920AA)
+	//my_ppm.DrawSine(0xFFFFFFFF, 0, 1080, 100)
+	//my_ppm.DrawSine(0xFFFFFFFF, 0, 300,100)
 	
+	//my_ppm.DrawSoftSphere(400, 200,400,0xFFd97aff, 0xFFd920AA)
 	 
 
 	//my_ppm.DrawLine(10,35,1000,100, 0xFFFFFFFF)
